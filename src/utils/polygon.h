@@ -1,3 +1,4 @@
+#define _POSIX_C_SOURCE 200112L
 #ifndef UTILS_POLYGON_H
 #define UTILS_POLYGON_H
 
@@ -66,7 +67,7 @@ public:
     {
         polygon->push_back(p);
     }
-    
+
     template <typename... Args>
     void emplace_back(Args... args)
     {
@@ -106,7 +107,7 @@ public:
         }
         return length;
     }
-    
+
     Point min() const
     {
         Point ret = Point(POINT_MAX, POINT_MAX);
@@ -117,7 +118,7 @@ public:
         }
         return ret;
     }
-    
+
     Point max() const
     {
         Point ret = Point(POINT_MIN, POINT_MIN);
@@ -134,10 +135,10 @@ public:
     {
         return ClipperLib::Area(*polygon);
     }
-    
+
     /*!
      * Translate the whole polygon in some direction.
-     * 
+     *
      * \param translation The direction in which to move the polygon
      */
     void translate(Point translation)
@@ -163,7 +164,7 @@ public:
         }
 
         double area = Area(*polygon);
-        
+
         x = x / 6 / area;
         y = y / 6 / area;
 
@@ -185,7 +186,7 @@ public:
         }
         return ret;
     }
-    
+
     /*!
      * Check if we are inside the polygon. We do this by tracing from the point towards the positive X direction,
      * every line we cross increments the crossings counter. If we have an even number of crossings then we are not inside the polygon.
@@ -195,9 +196,9 @@ public:
      * A segment is tested if pa.Y <= p.Y < pb.Y, where pa and pb are the points (from p0,p1) with smallest & largest Y.
      * When both have the same Y, no intersections are counted but there is a special test to see if the point falls
      * exactly on the line.
-     * 
+     *
      * Returns false if outside, true if inside; if the point lies exactly on the border, will return 'border_result'.
-     * 
+     *
      * \param p The point for which to check if it is inside this polygon
      * \param border_result What to return when the point is exactly on the border
      * \return Whether the point \p p is inside this polygon (or \p border_result when it is on the border)
@@ -209,7 +210,7 @@ public:
         {
             return false;
         }
-        
+
         int crossings = 0;
         Point p0 = back();
         for(unsigned int n=0; n<size(); n++)
@@ -269,7 +270,7 @@ public:
         }
         return (crossings % 2) == 1;
     }
-    
+
     void smooth(int remove_length, PolygonRef result)
     {
         PolygonRef& thiss = *this;
@@ -291,14 +292,14 @@ public:
     {
         PolygonRef& thiss = *this;
         ClipperLib::Path* poly = result.polygon;
-        
+
         if (size() < 4)
         {
             for (unsigned int poly_idx = 0; poly_idx < size(); poly_idx++)
                 poly->push_back(thiss[poly_idx]);
             return;
         }
-        
+
         Point& last = thiss[0];
         result.add(last);
         for (unsigned int poly_idx = 1; poly_idx < size(); poly_idx++)
@@ -310,16 +311,16 @@ public:
              *  \ b|
              * e \ | d
              *    \|
-             * 
+             *
              * b^2 = c^2 - a^2
              * b^2 = e^2 - d^2
-             * 
+             *
              * approximately: (this is asymptotically true for d -> 0)
              * a/d = c/e
              * a/(a+d) = c/(c+e)
              * a^2 / (a+d)^2 = c^2 / (c+e)^2
              * a^2 = c^2 * (a+d)^2/ (c+e)^2
-             * 
+             *
              */
             if ( vSize2(thiss[poly_idx]-last) < allowed_error_distance_squared )
             {
@@ -328,22 +329,22 @@ public:
             Point& next = thiss[(poly_idx+1) % size()];
             auto square = [](double in) { return in*in; };
             int64_t a2 = vSize2(next-thiss[poly_idx]) * vSize2(next-last) /  static_cast<int64_t>(square(vSizeMM(next-last) + vSizeMM(thiss[poly_idx]-last))*1000*1000);
-            
+
             int64_t error2 = vSize2(next-thiss[poly_idx]) - a2;
             if (error2 < allowed_error_distance_squared)
             {
                 // don't add the point to the result
-            } else 
+            } else
             {
                 poly->push_back(thiss[poly_idx]);
                 last = thiss[poly_idx];
             }
         }
-        
+
         if (result.size() < 3)
         {
             poly->clear();
-        
+
             for (unsigned int poly_idx = 0; poly_idx < size(); poly_idx++)
                 poly->push_back(thiss[poly_idx]);
             return;
@@ -351,15 +352,15 @@ public:
     }
 
     void pop_back()
-    { 
+    {
         polygon->pop_back();
     }
-    
+
     ClipperLib::Path::reference back() const
     {
         return polygon->back();
     }
-    
+
     ClipperLib::Path::iterator begin()
     {
         return polygon->begin();
@@ -500,7 +501,7 @@ public:
         clipper.Execute(ret.polygons, distance);
         return ret;
     }
-    
+
     Polygons smooth(int remove_length, int min_area) //!< removes points connected to small lines
     {
         Polygons ret;
@@ -512,19 +513,19 @@ public:
                 ret.add(poly);
                 continue;
             }
-            
+
             if (poly.size() == 0)
                 continue;
             if (poly.size() < 4)
                 ret.add(poly);
-            else 
+            else
                 poly.smooth(remove_length, ret.newPoly());
-            
+
 
         }
         return ret;
     }
-    
+
     Polygons simplify(int allowed_error_distance) //!< removes points connected to similarly oriented lines
     {
         int allowed_error_distance_squared = allowed_error_distance * allowed_error_distance;
@@ -558,7 +559,7 @@ public:
      * Removes polygons with area smaller than \p minAreaSize (note that minAreaSize is in mm^2, not in micron^2).
      */
     void removeSmallAreas(double minAreaSize)
-    {               
+    {
         Polygons& thiss = *this;
         for(unsigned int i=0; i<size(); i++)
         {
@@ -579,14 +580,14 @@ public:
         for (PolygonRef poly : *this)
         {
             Polygon result;
-            
+
             auto isDegenerate = [](Point& last, Point& now, Point& next)
             {
                 Point last_line = now - last;
                 Point next_line = next - now;
                 return dot(last_line, next_line) == -1 * vSize(last_line) * vSize(next_line);
             };
-            
+
             for (unsigned int idx = 0; idx < poly.size(); idx++)
             {
                 Point& last = (result.size() == 0) ? poly.back() : result.back();
@@ -600,15 +601,15 @@ public:
                         result.pop_back();
                     }
                 }
-                else 
+                else
                 {
                     result.add(poly[idx]);
                 }
             }
-            
+
             if (result.size() > 2) {  ret.add(result); }
         }
-        
+
         return ret;
     }
     /*!
@@ -622,13 +623,13 @@ public:
         {
             PolygonRef poly_keep = (*this)[poly_keep_idx];
             bool should_be_removed = false;
-            if (poly_keep.size() > 0) 
+            if (poly_keep.size() > 0)
 //             for (int hole_poly_idx = 0; hole_poly_idx < to_be_removed.size(); hole_poly_idx++)
             for (PolygonRef poly_rem : to_be_removed)
             {
 //                 PolygonRef poly_rem = to_be_removed[hole_poly_idx];
                 if (poly_rem.size() != poly_keep.size() || poly_rem.size() == 0) continue;
-                
+
                 // find closest point, supposing this point aligns the two shapes in the best way
                 int closest_point_idx = 0;
                 int smallestDist2 = -1;
@@ -662,11 +663,11 @@ public:
             }
             if (!should_be_removed)
                 result.add(poly_keep);
-            
+
         }
         return result;
     }
-            
+
 private:
     void _processPolyTreeNode(ClipperLib::PolyNode* node, std::vector<Polygons>& ret) const
     {
@@ -708,7 +709,7 @@ public:
         }
         return length;
     }
-    
+
     Point min() const
     {
         Point ret = Point(POINT_MAX, POINT_MAX);
@@ -722,7 +723,7 @@ public:
         }
         return ret;
     }
-    
+
     Point max() const
     {
         Point ret = Point(POINT_MIN, POINT_MIN);
@@ -761,7 +762,7 @@ public:
             }
         }
     }
-        
+
     void debugOutputHTML(const char* filename, bool dotTheVertices = false)
     {
         FILE* out = fopen(filename, "w");
@@ -786,7 +787,7 @@ public:
                     fprintf(out, "\" style=\"fill:gray; stroke:black;stroke-width:1\" />\n");
                 else
                     fprintf(out, "\" style=\"fill:red; stroke:black;stroke-width:1\" />\n");
-                
+
                 if (dotTheVertices)
                     for(Point& p : poly)
                         fprintf(out, "<circle cx=\"%f\" cy=\"%f\" r=\"2\" stroke=\"black\" stroke-width=\"3\" fill=\"black\" />", float(p.X - modelMin.X)/modelSize.X*500, float(p.Y - modelMin.Y)/modelSize.Y*500);
