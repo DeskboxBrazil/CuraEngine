@@ -1,7 +1,7 @@
-#define _POSIX_C_SOURCE 200112L
 #ifndef UTILS_POLYGON_H
 #define UTILS_POLYGON_H
 
+#include <cstdio>
 #include <vector>
 #include <assert.h>
 #include <float.h>
