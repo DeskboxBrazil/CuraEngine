@@ -1,7 +1,7 @@
 /** Copyright (C) 2013 David Braam - Released under terms of the AGPLv3 License */
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
+#include <cstring>
 #include <sys/time.h>
 #include <signal.h>
 #if defined(__linux__) || (defined(__APPLE__) && defined(__MACH__))
@@ -182,7 +182,7 @@ int main(int argc, char **argv)
             logError("ERROR: Failed to load json file: fdmprinter.json\n");
         }
     }
-        
+
     if(commandSocket)
     {
         commandSocket->connect(ip, port);
@@ -205,6 +205,6 @@ int main(int argc, char **argv)
         //Finalize the processor, this adds the end.gcode. And reports statistics.
         processor.finalize();
     }
-    
+
     return 0;
 }
