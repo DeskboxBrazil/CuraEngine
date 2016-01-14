@@ -101,7 +101,7 @@ int main(int argc, char **argv)
                     if (ip_port.find(':') != std::string::npos)
                     {
                         ip = ip_port.substr(0, ip_port.find(':'));
-                        port = strtol(ip_port.substr(ip_port.find(':') + 1).data().c_str(), 0, 10);
+                        port = strtol(ip_port.substr(ip_port.find(':') + 1).data(), 0, 10);
                     }
 
                     argn += 1;
