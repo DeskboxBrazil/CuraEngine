@@ -1,4 +1,5 @@
 /** Copyright (C) 2013 David Braam - Released under terms of the AGPLv3 License */
+#include <cstdlib>
 #include <stdio.h>
 #include <stdlib.h>
 #include <cstring>
@@ -100,7 +101,7 @@ int main(int argc, char **argv)
                     if (ip_port.find(':') != std::string::npos)
                     {
                         ip = ip_port.substr(0, ip_port.find(':'));
-                        port = std::stoi(ip_port.substr(ip_port.find(':') + 1).data());
+                        port = strtol(ip_port.substr(ip_port.find(':') + 1).data().c_str(), 0, 10);
                     }
 
                     argn += 1;
